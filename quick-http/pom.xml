@@ -3,35 +3,34 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>quick-lib</artifactId>
-        <groupId>com.xinyue.quick</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>quick-parent</artifactId>
+        <groupId>com.fcibook.quick</groupId>
+        <version>1.3</version>
     </parent>
+
+    <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.xinyue.quick</groupId>
-    <artifactId>http</artifactId>
+    <artifactId>quick-http</artifactId>
+
+    <name>Quick Http</name>
+    <description>quick is smart java project.</description>
+    <url>http://www.fcibook.com</url>
+
 
     <dependencies>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>fluent-hc</artifactId>
             <version>4.4.1</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
             <version>4.4.1</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>commons-codec</groupId>-->
-            <!--<artifactId>commons-codec</artifactId>-->
-            <!--<version>1.9</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.alibaba</groupId>-->
-            <!--<artifactId>fastjson</artifactId>-->
-            <!--<version>1.2.37</version>-->
-        <!--</dependency>-->
-
     </dependencies>
 </project>

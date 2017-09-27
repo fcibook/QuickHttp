@@ -32,7 +32,6 @@ public class CookieStore {
         final String value = maps[1];
         if(name != null && name.length() > 0 && !contains(name)){
             mCookies.add(new Cookie(name,value));
-            //System.out.println("---> "+name);
         }
     }
     public Cookie getCookie(String name){

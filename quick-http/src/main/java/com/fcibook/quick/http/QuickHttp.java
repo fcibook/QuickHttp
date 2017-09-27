@@ -49,23 +49,23 @@ public class QuickHttp {
         mController.setFile(file,"file","");
         return this;
     }
-    public QuickHttp addFileParame(String key,String value){
+    public QuickHttp addFileParame(String key, String value){
         mController.addFileParame(key,value);
         return this;
     }
-    public QuickHttp addParame(String key,Object value){
+    public QuickHttp addParame(String key, String value){
         mController.addParame(key,value);
         return this;
     }
-    public QuickHttp addParames(Map<String,Object> parames){
+    public QuickHttp addParames(Map<String,String> parames){
         mController.addParames(parames);
         return this;
     }
-    public QuickHttp addHeader(String name,String value){
+    public QuickHttp addHeader(String name, String value){
         mController.addHeader(name,value);
         return this;
     }
-    public QuickHttp addCookie(String name,String value){
+    public QuickHttp addCookie(String name, String value){
         mController.addCookie(name,value);
         return this;
     }
@@ -85,9 +85,8 @@ public class QuickHttp {
         mController.setProxy(hostname,port);
         return this;
     }
-    public QuickHttp setListener(QuickHttpListener listener){
-        mController.setListener(listener);
-        return this;
+    public ResponseBody body(){
+        return mController.body();
     }
     public String text(){
         return mController.text();

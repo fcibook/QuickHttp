@@ -1,6 +1,8 @@
 package com.fcibook.quick.http;
 
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpHost;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -11,20 +13,14 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.CharsetUtils;
-import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,24 +32,22 @@ import java.util.Map;
  */
 public class QuickHttpController {
 
-
-    public static int DEFAULT_CONNECTION_TIMEOUT  = 6 * 1000; // timeout in millis
+    public final static Charset DEFAULT_CHARSET = Charset.forName("utf-8");
+    public final static int DEFAULT_CONNECTION_TIMEOUT  = 6 * 1000; // timeout in millis
     private final static String DEFAULT_USER_AGENT = "Mozilla/4.0 (compatible; MSIE 7.0; Win32)";
     private final static HttpHost DEFAULT_PROXY = RequestConfig.DEFAULT.getProxy();
 
-    private final Charset defaultCharset = Charset.forName("utf-8");
     private String mUrl;
     private HttpType mHttpType;
     private HttpRequestBase mRequest;
     private List<Header> mHeaders = new ArrayList<Header>();
-    private Map<String,Object> mParames= new HashMap<String,Object>();
+    private Map<String,String> mParames= new HashMap<String,String>();
     private String mBodyContent;
     private ContentType mContentType;
     private String mUserAgent;
     private boolean isKeepAlive = false;
     private HttpHost mProxy;
     private CookieStore cookieStore = new CookieStore();
-    private QuickHttpListener mInterface;
     //file
     private File mFile;
     private String mName;
@@ -89,10 +83,10 @@ public class QuickHttpController {
     public void addHeader(String name,String value){
         mHeaders.add(new BasicHeader(name,value));
     }
-    public void addParame(String key,Object value){
+    public void addParame(String key,String value){
         mParames.put(key,value);
     }
-    public void addParames(Map<String,Object> parames){
+    public void addParames(Map<String,String> parames){
         mParames.putAll(parames);
     }
     public void setBodyContent(String content){
@@ -116,29 +110,7 @@ public class QuickHttpController {
     public void removeAllCookie(){
         cookieStore.clear();
     }
-    public void setListener(QuickHttpListener listener){
-        mInterface = listener;
-    }
 
-    private void setupParame(){
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(mUrl);
-        int i = 0;
-        for (String key:mParames.keySet()) {
-            Object value = mParames.get(key);
-            if (i == 0)
-            {
-                buffer.append("?");
-            }else{
-                buffer.append("&");
-            }
-            buffer.append(key);
-            buffer.append("=");
-            buffer.append(URLEncoder.encode(String.valueOf(value)));
-            i ++;
-        }
-        mUrl = buffer.toString();
-    }
     private void setupEntity( HttpPost httpPost){
         if (mParames != null && mParames.size() >0) {
             setupUrlEncodedFormEntity(httpPost);
@@ -154,7 +126,7 @@ public class QuickHttpController {
                 .seContentType(ContentType.MULTIPART_FORM_DATA)
                 .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                 .addBinaryBody(mName,mFile,ContentType.DEFAULT_BINARY,mFileName) //uploadFile对应服务端类的同名属性<File类型>
-                .setCharset(defaultCharset);
+                .setCharset(DEFAULT_CHARSET);
 
         for (String key:mFileParames.keySet()) {
             String value = mFileParames.get(key);
@@ -165,8 +137,8 @@ public class QuickHttpController {
     private void setupUrlEncodedFormEntity(HttpPost httpPost){
         List <NameValuePair> nvps = new ArrayList <NameValuePair>();
         for (String key:mParames.keySet()) {
-            Object value = mParames.get(key);
-            nvps.add(new BasicNameValuePair(key, String.valueOf(value)));
+            String value = mParames.get(key);
+            nvps.add(new BasicNameValuePair(key, value));
         }
         UrlEncodedFormEntity entity;
         try {
@@ -183,7 +155,8 @@ public class QuickHttpController {
     private void bindRequest(){
         setDefaultParameter();
         if(mHttpType == HttpType.GET){
-            setupParame();
+            QuickURL quickURL = new QuickURL(mUrl,mParames);
+            mUrl = quickURL.fullUrl();
             log("GET "+mUrl);
             mRequest = new HttpGet(mUrl);
         }else if(mHttpType == HttpType.POST){
@@ -251,50 +224,12 @@ public class QuickHttpController {
         CloseableHttpClient httpclient = createHttpClient();
         return httpclient.execute(mRequest);
     }
-
-
-    private void handlerResponseHeaders(HttpResponse response){
-        Header[] headers = response.getAllHeaders();
-        handlerSetCooikes(headers);
-        log("headers count: "+ headers.length);
-    }
-    private void handlerSetCooikes(Header[] headers){
-        CookieStore store = new CookieStore();
-        for (int i = 0; i < headers.length; i++) {
-            Header header = headers[i];
-            log("headers ["+i+"]  "+ header);
-            if(header.getName().equals("Set-Cookie")){
-                store.putCookie(header.getValue());
-            }
-        }
-        if(mInterface != null && store.size() > 0){
-            mInterface.onSetCookie(store);
-        }
-    }
-    public String text(){
+    public ResponseBody body(){
         bindRequest();
         CloseableHttpResponse response = null;
         try {
             response = execute();
-            log(response.getStatusLine());
-            HttpEntity entity = response.getEntity();
-            return EntityUtils.toString(entity, defaultCharset);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            safeClose(response);
-        }
-        return "";
-    }
-    public byte[] bytes(){
-        bindRequest();
-        CloseableHttpResponse response = null;
-        try {
-            response = execute();
-            log(response.getStatusLine());
-            HttpEntity entity = response.getEntity();
-            handlerResponseHeaders(response);
-            return EntityUtils.toByteArray(entity);
+            return new HttpResponseBody(response);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -302,12 +237,21 @@ public class QuickHttpController {
         }
         return null;
     }
-
-
-    private void log(Object message){
-        if(!isDebug) {
-            return;
+    public String text(){
+        ResponseBody body = body();
+        if(body == null){
+            return null;
         }
+        return body.text();
+    }
+    public byte[] bytes(){
+        ResponseBody body = body();
+        if(body == null){
+            return null;
+        }
+        return body.bytes();
+    }
+    private void log(Object message){
         log(String.valueOf(message));
     }
     private void log(String message){
