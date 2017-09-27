@@ -6,6 +6,8 @@
 this is a java quick request http util
  * Ability to quickly create HTTP requests
  * It's very simple, but very powerful
+ --------------------
+To use Quick - Http in a library
  ```java
  String res = new QuickHttp()
                 .url("http://www.csdn.net/")
@@ -15,9 +17,24 @@ this is a java quick request http util
                 .addCookie("sid","100")
                 .text();
  ```
---------------------
-To use Quick - Http in a library
-
+If use post and more return type
+ ```java
+byte[] res = new QuickHttp()
+                .url("http://www.csdn.net/")
+                .post()
+                .bytes();
+```
+or return http code and cookie and data of ResponseBody
+ ```java
+ResponseBody body = new QuickHttp()
+                .url("http://www.csdn.net/")
+                .post()
+                .body();
+int stateCode = body.getStateCode();
+CookieStore cookie = body.getCookie();
+String text = body.text();
+String bytes = body.bytes();
+```
 ## Download
 - [maven][1]
 - [the latest JAR][2]  
