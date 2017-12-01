@@ -14,32 +14,26 @@ public class HttpResponseBody implements ResponseBody {
 
     private int stateCode;
     private Header[] headers;
-    private String text;
     private byte[] bytes;
+    private OnHttpErrorListener mOnHttpErrorListener;
 
-    HttpResponseBody(HttpResponse response){
+    HttpResponseBody(HttpResponse response,OnHttpErrorListener listener){
+        mOnHttpErrorListener = listener;
         stateCode = response.getStatusLine().getStatusCode();
         headers = response.getAllHeaders();
         bytes = bytes(response.getEntity());
-        text = new String(bytes, QuickHttpController.DEFAULT_CHARSET);
-    }
-    private String text(HttpEntity entity){
-        try {
-            return EntityUtils.toString(entity, QuickHttpController.DEFAULT_CHARSET);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(QuickHttpController.isDebug){
+            QuickHttpController.log("Response content : "+ text());
         }
-        return null;
     }
     private byte[] bytes(HttpEntity entity){
         try {
             return EntityUtils.toByteArray(entity);
         } catch (IOException e) {
-            e.printStackTrace();
+            error(e);
         }
         return null;
     }
-
     @Override
     public int getStateCode(){
         return stateCode;
@@ -51,7 +45,9 @@ public class HttpResponseBody implements ResponseBody {
         for (int i = 0; i < headers.length; i++) {
             Header header = headers[i];
             if (header.getName().equals("Set-Cookie")) {
-                store.putCookie(header.getValue());
+                String cookie = header.getValue();
+                QuickHttpController.log("cookie : "+cookie);
+                store.putCookie(cookie);
             }
         }
         if (store.size() > 0) {
@@ -62,10 +58,20 @@ public class HttpResponseBody implements ResponseBody {
 
     @Override
     public String text() {
-        return text;
+        if(bytes == null){
+            return null;
+        }
+        return new String(bytes, QuickHttpController.DEFAULT_CHARSET);
     }
     @Override
     public byte[] bytes() {
         return bytes;
+    }
+
+
+    private void error(Throwable t){
+        if(mOnHttpErrorListener != null){
+            mOnHttpErrorListener.onError(t);
+        }
     }
 }

@@ -7,7 +7,7 @@
     <groupId>com.fcibook.quick</groupId>
     <artifactId>quick-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.3</version>
+    <version>1.4</version>
 
     <name>Quick</name>
     <description>quick is smart java project.</description>
@@ -41,11 +41,10 @@
         </dependency>
     </dependencies>
 
-
-
-
-
     <properties>
+        <junit.version>4.12</junit.version>
+        <javadoc.skip>false</javadoc.skip>
+        <jdk.version>1.6</jdk.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -94,8 +93,8 @@
                         <version>3.5.1</version>
                         <configuration>
                             <encoding>UTF-8</encoding>
-                            <source>1.5</source>
-                            <target>1.5</target>
+                            <source>1.6</source>
+                            <target>1.6</target>
                         </configuration>
                     </plugin>
                     <!-- Source -->

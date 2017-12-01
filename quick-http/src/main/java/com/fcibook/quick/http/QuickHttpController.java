@@ -38,6 +38,7 @@ public class QuickHttpController {
     private final static HttpHost DEFAULT_PROXY = RequestConfig.DEFAULT.getProxy();
 
     private String mUrl;
+    private int mConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     private HttpType mHttpType;
     private HttpRequestBase mRequest;
     private List<Header> mHeaders = new ArrayList<Header>();
@@ -53,8 +54,10 @@ public class QuickHttpController {
     private String mName;
     private String mFileName;
     private Map<String,String> mFileParames= new HashMap<String,String>();
+    //listener
+    private OnHttpErrorListener mOnHttpErrorListener;
 
-    private boolean isDebug = false;
+    protected static boolean isDebug = false;
 
     public enum  HttpType{
         GET,POST
@@ -62,6 +65,9 @@ public class QuickHttpController {
 
     public void setDebug(boolean debug){
         isDebug = debug;
+    }
+    public void setOnHttpErrorListener(OnHttpErrorListener listener){
+        mOnHttpErrorListener = listener;
     }
     public void setUrl(String url){
         mUrl = url;
@@ -110,6 +116,9 @@ public class QuickHttpController {
     public void removeAllCookie(){
         cookieStore.clear();
     }
+    public void setConnectionTimeout(int timeout){
+        mConnectionTimeout = timeout;
+    }
 
     private void setupEntity( HttpPost httpPost){
         if (mParames != null && mParames.size() >0) {
@@ -121,7 +130,9 @@ public class QuickHttpController {
         }
     }
     private void setupMultipartEntity(HttpPost httpPost){
-        log("upload file:"+mFile.getName() +"  exists:"+ mFile.exists());
+        if(isDebug){
+            log("Request upload file:"+mFile.getName() +"  exists:"+ mFile.exists());
+        }
         MultipartEntityBuilder entity = MultipartEntityBuilder.create()
                 .seContentType(ContentType.MULTIPART_FORM_DATA)
                 .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
@@ -135,9 +146,12 @@ public class QuickHttpController {
         httpPost.setEntity(entity.build());
     }
     private void setupUrlEncodedFormEntity(HttpPost httpPost){
-        List <NameValuePair> nvps = new ArrayList <NameValuePair>();
+        List<NameValuePair> nvps = new ArrayList <NameValuePair>();
         for (String key:mParames.keySet()) {
             String value = mParames.get(key);
+            if(isDebug){
+                log("Request parame <key>: " + key + " <value>:"+value);
+            }
             nvps.add(new BasicNameValuePair(key, value));
         }
         UrlEncodedFormEntity entity;
@@ -145,10 +159,13 @@ public class QuickHttpController {
             entity = new UrlEncodedFormEntity(nvps);
             httpPost.setEntity(entity);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            error(e);
         }
     }
     private void setupBodyContentFormEntity(HttpPost httpPost){
+        if(isDebug){
+            log("Request content: "+mBodyContent);
+        }
         StringEntity entity = new StringEntity(mBodyContent,mContentType);
         httpPost.setEntity(entity);
     }
@@ -157,12 +174,16 @@ public class QuickHttpController {
         if(mHttpType == HttpType.GET){
             QuickURL quickURL = new QuickURL(mUrl,mParames);
             mUrl = quickURL.fullUrl();
-            log("GET "+mUrl);
+            if(isDebug){
+                log("GET "+mUrl);
+            }
             mRequest = new HttpGet(mUrl);
         }else if(mHttpType == HttpType.POST){
             HttpPost httpPost= new HttpPost(mUrl);
+            if(isDebug){
+                log("POST "+mUrl);
+            }
             setupEntity(httpPost);
-            log("POST "+mUrl);
             mRequest = httpPost;
         }
         mRequest.setConfig(getDefaultRequestConfig());
@@ -170,9 +191,9 @@ public class QuickHttpController {
     }
     private RequestConfig getDefaultRequestConfig(){
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(DEFAULT_CONNECTION_TIMEOUT)
-                .setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT)
-                .setSocketTimeout(DEFAULT_CONNECTION_TIMEOUT)
+                .setConnectionRequestTimeout(mConnectionTimeout)
+                .setConnectTimeout(mConnectionTimeout)
+                .setSocketTimeout(mConnectionTimeout)
                 .setProxy(mProxy)
                 .build();
         return requestConfig;
@@ -196,7 +217,7 @@ public class QuickHttpController {
         if(isKeepAlive){
             addHeader("Proxy-Connection", "Keep-Alive");
         }
-        if(!containsHeaderName("Cookie")){
+        if(cookieStore.size() > 0 && !containsHeaderName("Cookie")){
             addHeader("Cookie",cookieStore.toString());
         }
         if(mProxy == null){
@@ -204,11 +225,20 @@ public class QuickHttpController {
         }
     }
     private void setupHeaders(){
+        if(isDebug){
+            log("Request headers size: "+mHeaders.size());
+            for (Header header:mHeaders) {
+                log("Request header <name>: " + header.getName() +" <value>:"+header.getValue());
+            }
+        }
         Header[] headers = new Header[mHeaders.size()];
         mHeaders.toArray(headers);
         mRequest.setHeaders(headers);
     }
     private void safeClose(CloseableHttpResponse response){
+        if(response == null){
+            return;
+        }
         try {
             response.close();
         } catch (IOException e) {
@@ -229,9 +259,9 @@ public class QuickHttpController {
         CloseableHttpResponse response = null;
         try {
             response = execute();
-            return new HttpResponseBody(response);
+            return new HttpResponseBody(response,mOnHttpErrorListener);
         } catch (IOException e) {
-            e.printStackTrace();
+            error(e);
         } finally {
             safeClose(response);
         }
@@ -251,13 +281,22 @@ public class QuickHttpController {
         }
         return body.bytes();
     }
-    private void log(Object message){
+    private void error(Throwable t){
+        if(mOnHttpErrorListener != null){
+            mOnHttpErrorListener.onError(t);
+        }
+    }
+    protected static void log(Object message){
         log(String.valueOf(message));
     }
-    private void log(String message){
+    protected static void log(String message){
         if(!isDebug) {
             return;
         }
-        System.out.println(message);
+        message = message.replaceAll("\\r|\\n","");
+        if(message.length() > 200){
+            message = message.substring(0,200);
+        }
+        System.out.println("[QuickHttp] "+message);
     }
 }

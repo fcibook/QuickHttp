@@ -85,6 +85,14 @@ public class QuickHttp {
         mController.setProxy(hostname,port);
         return this;
     }
+    public QuickHttp setConnectionTimeout(int timeout){
+        mController.setConnectionTimeout(timeout);
+        return this;
+    }
+    public QuickHttp setOnHttpErrorListener(OnHttpErrorListener listener){
+        mController.setOnHttpErrorListener(listener);
+        return this;
+    }
     public ResponseBody body(){
         return mController.body();
     }

@@ -51,3 +51,19 @@ String bytes = body.bytes();
     <version>1.3</version>
 </dependency>
 ```
+## Import dependency
+
+```xml
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>fluent-hc</artifactId>
+    <version>4.4.1</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpmime</artifactId>
+    <version>4.4.1</version>
+</dependency>
+```
+
+
