@@ -3,6 +3,8 @@ package com.fcibook.quick.http;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by cc_want on 2017/8/2.
@@ -13,6 +15,14 @@ public class CookieStore {
 
     public void addCookie(Cookie cookie){
         mCookies.add(cookie);
+    }
+    public void addCookies(Map<String,String> cookies){
+        for (Map.Entry<String, String> cookie:cookies.entrySet()) {
+            addCookie(cookie.getKey(),cookie.getValue());
+        }
+    }
+    public void addCookies(List<Cookie> cookies){
+        mCookies.addAll(cookies);
     }
     public void addCookie(String name,String value){
         mCookies.add(new Cookie(name,value));

@@ -113,6 +113,15 @@ public class QuickHttpController {
     public void addCookie(String name,String value){
         cookieStore.addCookie(name,value);
     }
+    public void addCookies(Map<String,String> cookies){
+        cookieStore.addCookies(cookies);
+    }
+    public void addCookie(Cookie cookie){
+        cookieStore.addCookie(cookie);
+    }
+    public void addCookies(List<Cookie> cookies){
+        cookieStore.addCookies(cookies);
+    }
     public void removeAllCookie(){
         cookieStore.clear();
     }

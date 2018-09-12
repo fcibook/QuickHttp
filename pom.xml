@@ -7,7 +7,7 @@
     <groupId>com.fcibook.quick</groupId>
     <artifactId>quick-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.4</version>
+    <version>1.5</version>
 
     <name>Quick</name>
     <description>quick is smart java project.</description>
@@ -75,15 +75,9 @@
         <developerConnection>http://www.fcibook.com</developerConnection>
     </scm>
 
-
-
     <profiles>
         <profile>
             <id>release</id>
-            <properties>
-                <gpg.executable>gpg2</gpg.executable>
-                <gpg.passphrase>T2s453Y12m7</gpg.passphrase>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -110,9 +104,7 @@
                                 </goals>
                             </execution>
                         </executions>
-                        <configuration>
-                            <attach>true</attach>
-                        </configuration>
+
                     </plugin>
                     <!-- Javadoc -->
                     <plugin>
@@ -129,9 +121,11 @@
                         </executions>
                         <configuration>
                             <show>public</show>
+                            <nohelp>true</nohelp>
                             <charset>UTF-8</charset>
                             <encoding>UTF-8</encoding>
                             <docencoding>UTF-8</docencoding>
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </plugin>
                     <!-- GPG -->
@@ -149,6 +143,7 @@
                         </executions>
                     </plugin>
                 </plugins>
+
             </build>
             <distributionManagement>
                 <snapshotRepository>
@@ -160,8 +155,8 @@
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
+
         </profile>
     </profiles>
-
 
 </project>

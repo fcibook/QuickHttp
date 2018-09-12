@@ -3,6 +3,7 @@ package com.fcibook.quick.http;
 import org.apache.http.entity.ContentType;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -67,6 +68,18 @@ public class QuickHttp {
     }
     public QuickHttp addCookie(String name, String value){
         mController.addCookie(name,value);
+        return this;
+    }
+    public QuickHttp addCookie(Cookie cookie){
+        mController.addCookie(cookie);
+        return this;
+    }
+    public QuickHttp addCookies(Map<String,String> cookies){
+        mController.addCookies(cookies);
+        return this;
+    }
+    public QuickHttp addCookies(List<Cookie> cookies){
+        mController.addCookies(cookies);
         return this;
     }
     public QuickHttp removeAllCookie(){

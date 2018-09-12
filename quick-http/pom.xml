@@ -5,7 +5,7 @@
     <parent>
         <artifactId>quick-parent</artifactId>
         <groupId>com.fcibook.quick</groupId>
-        <version>1.4</version>
+        <version>1.5</version>
     </parent>
 
     <packaging>jar</packaging>
