@@ -48,7 +48,7 @@ String bytes = body.bytes();
 <dependency>
     <groupId>com.fcibook.quick</groupId>
     <artifactId>quick-http</artifactId>
-    <version>1.5</version>
+    <version>1.4</version>
 </dependency>
 ```
 ## Import dependency
